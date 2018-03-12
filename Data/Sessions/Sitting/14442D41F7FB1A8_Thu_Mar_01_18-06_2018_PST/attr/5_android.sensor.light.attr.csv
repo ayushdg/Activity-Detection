@@ -1,0 +1,14 @@
+type,5
+string type,android.sensor.light
+name,BH1721 Ambient light sensor
+reporting made,on change
+wake up,false
+max delay (μs),10000000
+min delay (μs),0
+fifo max event count,0
+fifo reserved event count,0
+max range,10240.0
+max resolution,10.0
+power (mA),0.14
+version,104
+vendor,Rohm

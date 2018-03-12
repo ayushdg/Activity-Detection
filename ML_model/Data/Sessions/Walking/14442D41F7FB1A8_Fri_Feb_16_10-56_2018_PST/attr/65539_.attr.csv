@@ -1,0 +1,14 @@
+type,65539
+string type,
+name,em7180 any motion detector
+reporting made,one shot
+wake up,true
+max delay (μs),-1
+min delay (μs),0
+fifo max event count,0
+fifo reserved event count,0
+max range,0.0
+max resolution,1.0
+power (mA),0.13
+version,104
+vendor,EM Micro

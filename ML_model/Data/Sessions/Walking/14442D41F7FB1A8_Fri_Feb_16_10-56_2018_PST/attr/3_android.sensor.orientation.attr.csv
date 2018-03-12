@@ -1,0 +1,14 @@
+type,3
+string type,android.sensor.orientation
+name,em7180 orientation
+reporting made,continuous
+wake up,false
+max delay (μs),1000000
+min delay (μs),5000
+fifo max event count,0
+fifo reserved event count,0
+max range,360.0
+max resolution,1.0
+power (mA),5.0
+version,104
+vendor,EM Micro

@@ -1,0 +1,14 @@
+type,2
+string type,android.sensor.magnetic_field
+name,em7180 magnetic field sensor
+reporting made,continuous
+wake up,false
+max delay (μs),1000000
+min delay (μs),10000
+fifo max event count,0
+fifo reserved event count,0
+max range,4915.2
+max resolution,0.0305
+power (mA),2.4
+version,104
+vendor,EM Micro

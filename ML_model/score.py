@@ -1,4 +1,4 @@
-#from azureml.datacollector import ModelDataCollector
+from azureml.datacollector import ModelDataCollector
 import numpy as np
 import pandas as pd
 from scipy.stats import kurtosis, skew
@@ -16,14 +16,14 @@ from sklearn.externals import joblib
 from scipy.signal import butter, lfilter, freqz
 
 # Functions
-def stft(x, fftsize=256, overlap=2):   
+def stft(x, fftsize=256, overlap=2):
     hop = fftsize // overlap
     w = scipy.hanning(fftsize+1)[:-1]
     return np.array([np.fft.fft(w*x[i:i+fftsize]) for i in range(0, len(x)-fftsize, hop)])
 
-def get_fft(x):   
+def get_fft(x):
     return np.fft.fft(x)
-    
+
 def get_frequency(time):
     total_time = time[-1] - time[0]
     total_samples = len(time)
@@ -53,37 +53,37 @@ def feature(x, y, z, m, fftsize=256, overlap=2):
     meanamp_y, maxamp_y, minamp_y, stdamp_y, mad_y = basicFeats(y, fftsize)
     meanamp_z, maxamp_z, minamp_z, stdamp_z, mad_z = basicFeats(z, fftsize)
     meanamp_m, maxamp_m, minamp_m, stdamp_m, mad_m = basicFeats(m, fftsize)
-    
+
     hop = fftsize // overlap
     for i in range(0, len(m)-fftsize, hop):
         energyamp_m.append(np.array(np.sum(np.power(m[i:i+fftsize],2))))
         kurtosisamp_m.append(kurtosis(m[i:i+fftsize]))
         skewamp_m.append(skew(m[i:i+fftsize]))
-                
-    return [meanamp_x, maxamp_x, minamp_x, stdamp_x, mad_x, meanamp_y, maxamp_y, minamp_y, stdamp_y, mad_y, 
-            meanamp_z, maxamp_z, minamp_z, stdamp_z, mad_z, meanamp_m, maxamp_m, minamp_m, stdamp_m, mad_m, 
+
+    return [meanamp_x, maxamp_x, minamp_x, stdamp_x, mad_x, meanamp_y, maxamp_y, minamp_y, stdamp_y, mad_y,
+            meanamp_z, maxamp_z, minamp_z, stdamp_z, mad_z, meanamp_m, maxamp_m, minamp_m, stdamp_m, mad_m,
             energyamp_m, kurtosisamp_m, skewamp_m]
 
 def normalize_fft_feat(features_list):
     ret_feat = []
     for feat in features_list:
         ret_feat.append(feat / np.linalg.norm(feat))
-    
+
     return ret_feat
-    
+
 def normalize_feat(features_list):
     ret_feat = []
     for feat in features_list:
         ret_feat.append(feat / np.linalg.norm(feat))
-    
+
     return ret_feat
-            
+
 def five_point_smoothing(m):
     m_smooth = np.zeros(len(m))
     m_smooth = m;
     for i ,val in enumerate(m_smooth[2 : (len(m_smooth) -2)]):
         m_smooth[i] = (m_smooth[i-2] + m_smooth[i-1] + m_smooth[i] + m_smooth[i+1] + m_smooth[i+2])/5
-        
+
     return m_smooth
 
 def inter_quartile_range(x, y, z, fftsize=256, overlap=2):
@@ -120,8 +120,8 @@ def get_jerk(x,fftsize=256, overlap=2):
     jerk_x=[]
     hop = fftsize // overlap
     for i in range(0, len(x)-fftsize, hop):
-        jerk_x.append(np.array(np.mean(x[i:i+fftsize])))   
-    
+        jerk_x.append(np.array(np.mean(x[i:i+fftsize])))
+
     return jerk_x
 
 def get_window_label(labels, fftsize=256, overlap=2):
@@ -129,7 +129,7 @@ def get_window_label(labels, fftsize=256, overlap=2):
     ret_labels = []
     for i in range(0, len(labels)-fftsize, hop):
         ret_labels.append(mode(labels[i:i+fftsize]))
-    
+
     return ret_labels
 
 
@@ -142,29 +142,29 @@ def compute_feats(*dataframes, show_plots=False):
     global label
     #df = pd.DataFrame(columns=list(range(60)))
     for counter, data in enumerate(dataframes):
-        
+
         time, x, y, z, _, str_label = np.array(data[0]), np.array(data[1]), np.array(data[2]), np.array(data[3]), \
-                                        np.array(data[4]), np.array(data[5])        
-        
+                                        np.array(data[4]), np.array(data[5])
+
         total_time, total_sample, freq = get_frequency(time)
         #5 seconds time frame
         window_size = 5 * freq
-        
+
         labels = [label[str_label[i]] for i in range(len(str_label))]
         window_labels = get_window_label(labels, fftsize=window_size)
         #Calculate the Frequency domain
         x = five_point_smoothing(x)
         y = five_point_smoothing(y)
         z = five_point_smoothing(z)
-        
+
         ft_x = get_fft(x)
         ft_x = np.abs(ft_x)
         ft_y = get_fft(y)
         ft_y = np.abs(ft_y)
         ft_z = get_fft(z)
         ft_z = np.abs(ft_z)
-        
-        
+
+
         #Amplitude Calculation
         mpre = x * x + y * y + z * z
         m = np.sqrt(mpre)
@@ -175,19 +175,19 @@ def compute_feats(*dataframes, show_plots=False):
             plt.ylabel('Amplitude')
             plt.xlabel('Time')
             plt.show()
-        
+
         #Jerk
         jerk_x = calc_jerk(x, time)
         jerk_y = calc_jerk(y, time)
         jerk_z = calc_jerk(z, time)
         jerk_m = np.array(jerk_x) * np.array(jerk_x) + np.array(jerk_y) * np.array(jerk_y) + np.array(jerk_z) * np.array(jerk_z)
-        
+
         #FFT features
         stft_signal = stft(m, fftsize=window_size)
         energy_signal = []
         for i, amp in enumerate(stft_signal):
             energy_signal.append(np.sum(np.power(abs(stft_signal[i]),2)))
-        
+
         features_list = feature(x, y, z, m, fftsize=window_size)
         features_list.append(energy_signal)
         diff_x = np.subtract(features_list[1], features_list[2])
@@ -198,39 +198,39 @@ def compute_feats(*dataframes, show_plots=False):
         features_list.append(diff_y)
         features_list.append(diff_z)
         features_list.append(diff_m)
-        
+
         iqr_x, iqr_y, iqr_z = inter_quartile_range(x, y, z, fftsize=window_size)
         smaq = sma(x, y, z, fftsize=window_size)
         features_list.append(iqr_x)
         features_list.append(iqr_y)
         features_list.append(iqr_z)
         features_list.append(smaq)
-        
+
         #Add Jerk features to the list
         jerk_features_list = feature(jerk_x, jerk_y, jerk_z, jerk_m, fftsize=window_size)
 
         # Normalize other features
         norm_features_list = normalize_feat(features_list)
         norm_jerk_features_list = normalize_feat(jerk_features_list)
-        
+
         ########################################################################
         # Frequency Domain
         ########################################################################
-        
+
         #Frequency amplitude
         mpre = ft_x * ft_x + ft_y * ft_y + ft_z * ft_z
         m_f = np.sqrt(mpre)
         #Low pass filter (5 point Smoothing)
-        
+
         if show_plots:
             plt.plot(m_f[:4000])
             plt.title('Accelerometer Data - '+str_label[0])
             plt.ylabel('Freq Amplitude')
             plt.xlabel('Time')
             plt.show()
-        
+
         fft_features_list = feature(ft_x, ft_y, ft_z, m_f, fftsize=window_size)
-        
+
         fft_diff_x = np.subtract(features_list[1], features_list[2])
         fft_diff_y = np.subtract(features_list[6], features_list[7])
         fft_diff_z = np.subtract(features_list[11], features_list[12])
@@ -239,21 +239,21 @@ def compute_feats(*dataframes, show_plots=False):
         fft_features_list.append(fft_diff_y)
         fft_features_list.append(fft_diff_z)
         fft_features_list.append(fft_diff_m)
-        
+
         fft_iqr_x, fft_iqr_y, fft_iqr_z = inter_quartile_range(ft_x, ft_y, ft_z, fftsize=window_size)
         fft_smaq = sma(ft_x, ft_y, ft_z, fftsize=window_size)
         fft_features_list.append(fft_iqr_x)
         fft_features_list.append(fft_iqr_y)
         fft_features_list.append(fft_iqr_z)
         fft_features_list.append(fft_smaq)
-        
+
         #Jerk
         win_jerk_x = get_jerk(jerk_x, fftsize=window_size)
         win_jerk_y = get_jerk(jerk_y, fftsize=window_size)
         win_jerk_z = get_jerk(jerk_z, fftsize=window_size)
-        
+
         fft_jerk_x = get_fft(win_jerk_x)
-        fft_jerk_x = np.abs(fft_jerk_x)        
+        fft_jerk_x = np.abs(fft_jerk_x)
         fft_jerk_y = get_fft(win_jerk_y)
         fft_jerk_y = np.abs(fft_jerk_y)
         fft_jerk_z = get_fft(win_jerk_z)
@@ -264,24 +264,24 @@ def compute_feats(*dataframes, show_plots=False):
         fft_features_list.append(fft_jerk_z)
         jerk_iqr_x, jerk_iqr_y, jerk_iqr_z = inter_quartile_range(jerk_x, jerk_y, jerk_z, fftsize=window_size)
         jerk_smaq = sma(jerk_x, jerk_y, jerk_z, fftsize=window_size)
-        
+
         #Normalize fft features
         fft_norm_features_list = normalize_fft_feat(fft_features_list)
-        
+
         if show_plots:
             plt.plot(energy_signal[:4000])
             plt.xlabel('Freq')
             plt.ylabel('Energy')
             plt.title('Frequency vs Energy - '+str_label[0])
             plt.show()
-        
-        
+
+
         ####################################################################################
         norm_features_list.extend(fft_norm_features_list)
         norm_features_list.extend(norm_jerk_features_list)
         #Take transpose
         norm_features_list = list(map(list, zip(*norm_features_list)))
-        
+
         #Put in a dataframe
         temp_df = pd.DataFrame(norm_features_list)
         temp_df[len(temp_df.columns)] = window_labels
@@ -290,7 +290,7 @@ def compute_feats(*dataframes, show_plots=False):
             df = temp_df
         else:
             df = df.append(temp_df)
-            
+
     return df
 
 def test_model_api(files):
@@ -325,8 +325,8 @@ def init():
     global model, inputs_dc, prediction_dc
     model = joblib.load('testModel2.pkl')
 
-    #inputs_dc = ModelDataCollector('testModel.pkl',identifier="inputs")
-    #prediction_dc = ModelDataCollector('testModel.pkl', identifier="prediction")
+    inputs_dc = ModelDataCollector('testModel.pkl',identifier="inputs")
+    prediction_dc = ModelDataCollector('testModel.pkl', identifier="prediction")
 
 def load_data():
     data_dict = {}
@@ -349,21 +349,28 @@ def run(input_array):
         acc = input_array['acceleration']
         gyro = input_array['gyroscope']
         mag = input_array['magnetic']
-        model = joblib.load('azure_models1/acc_RFClassifier-onevsone.pkl')
+        #model = joblib.load('azure_models1/acc_RFClassifier-onevsone.pkl')
         df_acc = pd.DataFrame(acc)
         df_gyro = pd.DataFrame(gyro)
         df_mag = pd.DataFrame(mag)
         _, _, acc_freq = get_frequency(np.array(df_acc[0]))
+        prediction = 'Unknown'
         #_, _, gyro_freq = get_frequency(np.array(df_gyro[0]))
         #_, _, mag_freq = get_frequency(np.array(df_mag[0]))
-        
+
         #if(len(df_acc)< 5 * acc_freq or len(df_gyro) < 5 * gyro_freq or len(df_mag) < 5 * mag_freq):
         #    return 'Unknown'
-        
+
         #test_df = test_model_api([df_acc, df_gyro, df_mag])
+        if(len(df_acc)< 5 * acc_freq):
+            prediction_dc.collect(prediction)
+            return prediction
+
         test_df = test_model_api([df_acc])
         pred_labels = model.predict(test_df)
-        print(pred_labels)
+        #print(pred_labels)
+        inputs_dc.collect(input_array)
+        prediction_dc.collect(int_to_label[mode(pred_labels)])
         return int_to_label[mode(pred_labels)]
         input_array = input_array['acceleration'][0][1]
         input_array = np.asarray(input_array)
@@ -373,6 +380,3 @@ def run(input_array):
         return prediction.tolist()
     except Exception as e:
         return (str(e))
-
-data = load_data()
-print(run(data))

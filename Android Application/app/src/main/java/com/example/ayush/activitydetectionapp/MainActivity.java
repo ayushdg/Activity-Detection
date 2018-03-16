@@ -53,15 +53,16 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     private void startCollecting() {
         SensorManager mSensorManager = ((SensorManager)getSystemService(SENSOR_SERVICE));
-        List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        //List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
+        Sensor mySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-
-        for (Sensor sensor : sensors) {
+        mSensorManager.registerListener(this,mySensor,SensorManager.SENSOR_DELAY_NORMAL);
+        /*for (Sensor sensor : sensors) {
             if(sensor.getType() == Sensor.TYPE_ACCELEROMETER ||
                     sensor.getType() == Sensor.TYPE_GYROSCOPE ||
                     sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
                 mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }
+        }*/
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -116,13 +117,13 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     public void callWebService(View view)
     {
         final String BASE_URL = "http://40.84.63.50/api/v1/service/testservice/score";
-        final String API_KEY = "bdee2967558e42369dbb48cc8b7b7463";
+        final String API_KEY = "8a0980a4db234114918e356d81178492";
         final SyncHttpClient client = new SyncHttpClient();
         client.addHeader("Content-Type", "application/json");
         client.addHeader("Authorization", "Bearer " + API_KEY);
         final Context context = this;
         final String myNum = "6.0";
-        final long period = 7000;
+        final long period = 6000;
         //startCollecting();
         new Timer().schedule(new TimerTask() {
             @Override
@@ -130,7 +131,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 cpost(client, context, BASE_URL);//,myNum);//, myNum);
                 // do your task here
             }
-        }, 0, period);
+        }, period, period);
         //cpost(client, this, BASE_URL);//, myNum);
         /*try {
         String interim = "[" + myNum + "]]}";

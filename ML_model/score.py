@@ -359,7 +359,8 @@ def run(input_array):
         
         #if(len(df_acc)< 5 * acc_freq or len(df_gyro) < 5 * gyro_freq or len(df_mag) < 5 * mag_freq):
         #    return 'Unknown'
-        
+        if(len(df_acc)< 5 * acc_freq):
+            return 'Unknown'
         #test_df = test_model_api([df_acc, df_gyro, df_mag])
         test_df = test_model_api([df_acc])
         pred_labels = model.predict(test_df)

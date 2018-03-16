@@ -46,7 +46,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         setContentView(R.layout.activity_main);
 
         mTextView = (TextView) findViewById(R.id.text);
-        startCollecting();
         // Enables Always-on
         setAmbientEnabled();
     }
@@ -117,14 +116,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     public void callWebService(View view)
     {
         final String BASE_URL = "http://40.84.63.50/api/v1/service/testservice/score";
-        final String API_KEY = "8a0980a4db234114918e356d81178492";
+        final String API_KEY = "409f07057d034277a1cb36be665c38a3";
         final SyncHttpClient client = new SyncHttpClient();
         client.addHeader("Content-Type", "application/json");
         client.addHeader("Authorization", "Bearer " + API_KEY);
         final Context context = this;
         final String myNum = "6.0";
-        final long period = 6000;
-        //startCollecting();
+        final long period = 6400;
+        startCollecting();
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -193,7 +192,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                          "]," + mag + ": [" + magData +
                          "]}}";
             //String res = "{\"input_array\": [" + interim;
-
             StringEntity entity = new StringEntity(res);
             client.post(context, BASE_URL, entity, "application/json",
                  /*   new AsyncHttpResponseHandler(){

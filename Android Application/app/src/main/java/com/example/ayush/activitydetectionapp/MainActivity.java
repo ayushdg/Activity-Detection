@@ -52,16 +52,10 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     private void startCollecting() {
         SensorManager mSensorManager = ((SensorManager)getSystemService(SENSOR_SERVICE));
-        //List<Sensor> sensors = mSensorManager.getSensorList(Sensor.TYPE_ALL);
         Sensor mySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
         mSensorManager.registerListener(this,mySensor,SensorManager.SENSOR_DELAY_NORMAL);
-        /*for (Sensor sensor : sensors) {
-            if(sensor.getType() == Sensor.TYPE_ACCELEROMETER ||
-                    sensor.getType() == Sensor.TYPE_GYROSCOPE ||
-                    sensor.getType() == Sensor.TYPE_MAGNETIC_FIELD)
-                mSensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
-        }*/
+
     }
 
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
@@ -99,24 +93,14 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             else
                 gyroData = gyroData + ", " + myData;
         }
-       /* else if (event.sensor.getType() == Sensor.TYPE_STEP_COUNTER) {
-            String msg = "Count: " + (int)event.values[0];
-            mTextViewStepCount.setText(msg);
-            Log.d(TAG, msg);
-        }
-        else if (event.sensor.getType() == Sensor.TYPE_STEP_DETECTOR) {
-            String msg = "Detected at " + currentTimeStr();
-            mTextViewStepDetect.setText(msg);
-            Log.d(TAG, msg);
-        }*/
         else
             Log.d(TAG, "Unknown sensor type");
     }
 
     public void callWebService(View view)
     {
-        final String BASE_URL = "http://40.84.63.50/api/v1/service/testservice/score";
-        final String API_KEY = "409f07057d034277a1cb36be665c38a3";
+        final String BASE_URL = "";//Replace with URL OF SERVER
+        final String API_KEY = ""; //Replace with API KEY OF SERVER
         final SyncHttpClient client = new SyncHttpClient();
         client.addHeader("Content-Type", "application/json");
         client.addHeader("Authorization", "Bearer " + API_KEY);
@@ -131,55 +115,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                 // do your task here
             }
         }, period, period);
-        //cpost(client, this, BASE_URL);//, myNum);
-        /*try {
-        String interim = "[" + myNum + "]]}";
-        String res = "{\"input_array\": [" + interim;
-        StringEntity entity = new StringEntity(res);
-        client.post(this, BASE_URL, entity, "application/json",
-                 /*   new AsyncHttpResponseHandler(){
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                            // If the response is JSONObject instead of expected JSONArray
-                            String resp = response.toString();
-                        }
 
-                        @Override
-                        public void onFailure(int statusCode, Header[] headers, byte[] errorRespone, Throwable e)
-                        {
-                            String rep = errorRespone.toString();
-                        }
-                    });*/
-               /* new TextHttpResponseHandler() {
-                    @Override
-                    public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
-                        String resp = responseString;
-                        mTextView = (TextView) findViewById(R.id.text);
-                        mTextView.setText(resp.substring(2,resp.length()-2));
-                    }
-
-                    @Override
-                    public void onSuccess(int statusCode, Header[] headers, String responseString) {
-                        String resp = responseString;
-                        mTextView = (TextView) findViewById(R.id.text);
-                        mTextView.setText(resp.substring(2,resp.length()-2));
-                    }
-                });
-           /*client.post(BASE_URL, params, new AsyncHttpResponseHandler() {
-               @Override
-               public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                   // called when response HTTP status is "200 OK"
-                   String resp = response.toString();
-               }
-
-               @Override
-               public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                   String resp = errorResponse.toString();
-                   // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-               }
-           });*/
-
-           //}catch (Exception e){}
     }
     public void cpost(SyncHttpClient client, Context context, String BASE_URL)//, String myNum)
     {
@@ -194,19 +130,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
             //String res = "{\"input_array\": [" + interim;
             StringEntity entity = new StringEntity(res);
             client.post(context, BASE_URL, entity, "application/json",
-                 /*   new AsyncHttpResponseHandler(){
-                        @Override
-                        public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                            // If the response is JSONObject instead of expected JSONArray
-                            String resp = response.toString();
-                        }
 
-                        @Override
-                        public void onFailure(int statusCode, Header[] headers, byte[] errorRespone, Throwable e)
-                        {
-                            String rep = errorRespone.toString();
-                        }
-                    });*/
                     new TextHttpResponseHandler() {
                         @Override
                         public void onFailure(int statusCode, Header[] headers, String responseString, Throwable throwable) {
@@ -225,19 +149,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                             //mTextView.setText(resp.substring(2,resp.length()-2));
                         }
                     });
-           /*client.post(BASE_URL, params, new AsyncHttpResponseHandler() {
-               @Override
-               public void onSuccess(int statusCode, Header[] headers, byte[] response) {
-                   // called when response HTTP status is "200 OK"
-                   String resp = response.toString();
-               }
-
-               @Override
-               public void onFailure(int statusCode, Header[] headers, byte[] errorResponse, Throwable e) {
-                   String resp = errorResponse.toString();
-                   // called when response HTTP status is "4XX" (eg. 401, 403, 404)
-               }
-           });*/
 
         }catch (Exception e){}
         accData = "";
